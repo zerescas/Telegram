@@ -159,7 +159,6 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     private int automaticBrightnessRow;
     private int automaticBrightnessInfoRow;
     private int preferedHeaderRow;
-    private int newThemeInfoRow;
     private int themeHeaderRow;
     private int bubbleRadiusHeaderRow;
     private int bubbleRadiusRow;
@@ -174,6 +173,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     private int previewMessagesHeaderRow;
     private int previewMessagesRow;
     private ThemePreviewMessagesCell previewMessagesCell;
+
+    private int settingsInfoRow;
 
     private int rowCount;
 
@@ -273,7 +274,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), heightMeasureSpec);
+
             int width = MeasureSpec.getSize(widthMeasureSpec);
             if (lastWidth != width) {
                 sizeBar.setProgress((SharedConfig.fontSize - startFontSize) / (float) (endFontSize - startFontSize));
@@ -455,7 +457,6 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         nightTypeInfoRow = -1;
         scheduleHeaderRow = -1;
         nightThemeRow = -1;
-        newThemeInfoRow = -1;
         scheduleFromRow = -1;
         scheduleToRow = -1;
         scheduleFromToInfoRow = -1;
@@ -507,8 +508,6 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         Collections.sort(defaultThemes, (o1, o2) -> Integer.compare(o1.sortIndex, o2.sortIndex));
 
         if (currentType == THEME_TYPE_BASIC) {
-            newThemeInfoRow = rowCount++; // TODO: Useless Code
-
             themeHeaderRow = rowCount++;
             themeListRow = rowCount++;
             backgroundRow = rowCount++;
@@ -525,14 +524,15 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             previewMessagesRow = rowCount++;
             bubbleRadiusHeaderRow = rowCount++;
             bubbleRadiusRow = rowCount++;
-           // bubbleRadiusInfoRow = rowCount++;
+
             textSizeHeaderRow = rowCount++;
             textSizeRow = rowCount++;
 
+            chatListInfoRow = rowCount++;
             chatListHeaderRow = rowCount++;
             chatListRow = rowCount++;
-            chatListInfoRow = rowCount++;
 
+            settingsInfoRow = rowCount++;
             settingsRow = rowCount++;
             nightThemeRow = rowCount++;
             customTabsRow = rowCount++;
@@ -2047,9 +2047,9 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             } else if (position == automaticBrightnessInfoRow || position == scheduleLocationInfoRow) {
                 return 2;
             } else if (position == themeInfoRow || position == nightTypeInfoRow || position == scheduleFromToInfoRow ||
-                    position == stickersSection2Row || position == settings2Row || position == newThemeInfoRow ||
+                    position == stickersSection2Row || position == settings2Row || position == settingsInfoRow ||
                     position == chatListInfoRow || position == bubbleRadiusInfoRow) {
-                return 3;
+                return 3; // Insert Space
             } else if (position == nightDisabledRow || position == nightScheduledRow || position == nightAutomaticRow || position == nightSystemDefaultRow) {
                 return 4;
             } else if (position == scheduleHeaderRow || position == automaticHeaderRow || position == preferedHeaderRow ||
