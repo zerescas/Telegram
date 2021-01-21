@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="AppName">Telegram</string>
-    <string name="AppNameBeta">Telegram Beta</string>
+    <string name="AppName">Quartz</string>
+    <string name="AppNameBeta">Quartz Preview</string>
     <string name="LanguageName">English</string>
     <string name="English">English</string>
     <string name="LanguageNameInEnglish">English</string>
@@ -1509,6 +1509,7 @@
     <string name="ThemeSetUrl">Set link</string>
     <string name="ThemeUrl">Theme Link</string>
     <string name="BubbleRadius">Message corners</string>
+    <string name="PreviewMessages">Messages appearance</string>
     <string name="ChatList">Chat list view</string>
     <string name="ChatListDefault">Two lines</string>
     <string name="ChatListExpanded">Three lines</string>

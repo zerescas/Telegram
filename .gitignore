@@ -4,3 +4,8 @@ build/
 obj/
 *.iml
 local.properties
+/TMessagesProj/.cxx
+/TMessagesProj/google-services.json
+/TMessagesProj/build.gradle
+/TMessagesProj/config/release.keystore
+/TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java

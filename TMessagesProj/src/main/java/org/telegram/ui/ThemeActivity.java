@@ -94,7 +94,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS;
+
 public class ThemeActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
+    enum WidgetType{
+        Header,
+        Text
+    }
 
     public final static int THEME_TYPE_BASIC = 0;
     public final static int THEME_TYPE_NIGHT = 1;
@@ -165,6 +171,10 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     private int themeAccentListRow;
     private int themeInfoRow;
 
+    private int previewMessagesHeaderRow;
+    private int previewMessagesRow;
+    private ThemePreviewMessagesCell previewMessagesCell;
+
     private int rowCount;
 
     private boolean updatingLocation;
@@ -211,9 +221,9 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         void onSizeChanged();
     }
 
+
     private class TextSizeCell extends FrameLayout {
 
-        private ThemePreviewMessagesCell messagesCell;
         private SeekBarView sizeBar;
         private int startFontSize = 12;
         private int endFontSize = 30;
@@ -253,12 +263,6 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             });
             sizeBar.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
             addView(sizeBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 38, Gravity.LEFT | Gravity.TOP, 5, 5, 39, 0));
-
-            messagesCell = new ThemePreviewMessagesCell(context, parentLayout, 0);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                messagesCell.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
-            }
-            addView(messagesCell, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 53, 0, 0));
         }
 
         @Override
@@ -280,7 +284,6 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         @Override
         public void invalidate() {
             super.invalidate();
-            messagesCell.invalidate();
             sizeBar.invalidate();
         }
 
@@ -385,7 +388,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             RecyclerView.ViewHolder holder = listView.findViewHolderForAdapterPosition(textSizeRow);
             if (holder != null && holder.itemView instanceof TextSizeCell) {
                 TextSizeCell cell = (TextSizeCell) holder.itemView;
-                ChatMessageCell[] cells = cell.messagesCell.getCells();
+                ChatMessageCell[] cells = previewMessagesCell.getCells();
                 for (int a = 0; a < cells.length; a++) {
                     cells[a].getMessageObject().resetLayout();
                     cells[a].requestLayout();
@@ -421,7 +424,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             RecyclerView.ViewHolder holder = listView.findViewHolderForAdapterPosition(textSizeRow);
             if (holder != null && holder.itemView instanceof TextSizeCell) {
                 TextSizeCell cell = (TextSizeCell) holder.itemView;
-                ChatMessageCell[] cells = cell.messagesCell.getCells();
+                ChatMessageCell[] cells = previewMessagesCell.getCells();
                 for (int a = 0; a < cells.length; a++) {
                     cells[a].getMessageObject().resetLayout();
                     cells[a].requestLayout();
@@ -504,12 +507,11 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         Collections.sort(defaultThemes, (o1, o2) -> Integer.compare(o1.sortIndex, o2.sortIndex));
 
         if (currentType == THEME_TYPE_BASIC) {
-            textSizeHeaderRow = rowCount++;
-            textSizeRow = rowCount++;
-            backgroundRow = rowCount++;
-            newThemeInfoRow = rowCount++;
+            newThemeInfoRow = rowCount++; // TODO: Useless Code
+
             themeHeaderRow = rowCount++;
             themeListRow = rowCount++;
+            backgroundRow = rowCount++;
             hasThemeAccents = Theme.getCurrentTheme().hasAccentColors();
             if (themesHorizontalListCell != null) {
                 themesHorizontalListCell.setDrawDivider(hasThemeAccents);
@@ -519,9 +521,13 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             }
             themeInfoRow = rowCount++;
 
+            previewMessagesHeaderRow = rowCount++;
+            previewMessagesRow = rowCount++;
             bubbleRadiusHeaderRow = rowCount++;
             bubbleRadiusRow = rowCount++;
-            bubbleRadiusInfoRow = rowCount++;
+           // bubbleRadiusInfoRow = rowCount++;
+            textSizeHeaderRow = rowCount++;
+            textSizeRow = rowCount++;
 
             chatListHeaderRow = rowCount++;
             chatListRow = rowCount++;
@@ -748,6 +754,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             menuItem.addSubItem(edit_theme, R.drawable.msg_edit, LocaleController.getString("EditThemeColors", R.string.EditThemeColors));
             menuItem.addSubItem(create_theme, R.drawable.menu_palette, LocaleController.getString("CreateNewThemeMenu", R.string.CreateNewThemeMenu));
             menuItem.addSubItem(reset_settings, R.drawable.msg_reset, LocaleController.getString("ThemeResetToDefaults", R.string.ThemeResetToDefaults));
+            menuItem.addSubItem(10, R.drawable.burn, "");
+            menuItem.addSubItem(11, R.drawable.photo_paint, "Custom Button");
         } else {
             actionBar.setTitle(LocaleController.getString("AutoNightTheme", R.string.AutoNightTheme));
         }
@@ -1663,7 +1671,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                     view = new TextSizeCell(mContext);
                     view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
-                case 9:
+                case 9: // ChatListView
                     view = new ChatListCell(mContext) {
                         @Override
                         protected void didSelectChatType(boolean threeLines) {
@@ -1824,9 +1832,19 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                     view.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, AndroidUtilities.dp(62)));
                     break;
                 }
+
                 case 13:
-                default:
                     view = new BubbleRadiusCell(mContext);
+                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    break;
+
+
+                case 14:
+                default:
+                    view = previewMessagesCell = new ThemePreviewMessagesCell(mContext, parentLayout, 0);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        view.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+                    }
                     view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
             }
@@ -1854,8 +1872,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                         cell.setTextAndValue(LocaleController.getString("AutoNightTo", R.string.AutoNightTo), String.format("%02d:%02d", currentHour, currentMinute), false);
                     } else if (position == scheduleUpdateLocationRow) {
                         cell.setTextAndValue(LocaleController.getString("AutoNightUpdateLocation", R.string.AutoNightUpdateLocation), Theme.autoNightCityName, false);
-                    } else if (position == contactsSortRow) {
-                        String value;
+                    } /* else if (position == contactsSortRow) {
+                        String value; // TODO: Useless code
                         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                         int sort = preferences.getInt("sortContactsBy", 0);
                         if (sort == 0) {
@@ -1866,7 +1884,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                             value = LocaleController.getString("LastName", R.string.SortLastName);
                         }
                         cell.setTextAndValue(LocaleController.getString("SortBy", R.string.SortBy), value, true);
-                    } else if (position == backgroundRow) {
+                    } */ else if (position == backgroundRow) {
                         cell.setText(LocaleController.getString("ChangeChatBackground", R.string.ChangeChatBackground), false);
                     } else if (position == contactsReimportRow) {
                         cell.setText(LocaleController.getString("ImportContacts", R.string.ImportContacts), true);
@@ -1933,6 +1951,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                         headerCell.setText(LocaleController.getString("ChatList", R.string.ChatList));
                     } else if (position == bubbleRadiusHeaderRow) {
                         headerCell.setText(LocaleController.getString("BubbleRadius", R.string.BubbleRadius));
+                    } else if (position == previewMessagesHeaderRow) {
+                        headerCell.setText(LocaleController.getString("PreviewMessages", R.string.PreviewMessages));
                     }
                     break;
                 }
@@ -2034,7 +2054,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                 return 4;
             } else if (position == scheduleHeaderRow || position == automaticHeaderRow || position == preferedHeaderRow ||
                     position == settingsRow || position == themeHeaderRow || position == textSizeHeaderRow ||
-                    position == chatListHeaderRow || position == bubbleRadiusHeaderRow) {
+                    position == chatListHeaderRow || position == bubbleRadiusHeaderRow || position == previewMessagesHeaderRow) {
                 return 5;
             } else if (position == automaticBrightnessRow) {
                 return 6;
@@ -2054,6 +2074,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                 return 12;
             } else if (position == bubbleRadiusRow) {
                 return 13;
+            } else if (position == previewMessagesRow) {
+                return 14;
             }
             return 1;
         }
