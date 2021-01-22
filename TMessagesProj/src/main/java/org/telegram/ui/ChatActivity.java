@@ -17708,6 +17708,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 selectedObject = message;
                 selectedObjectGroup = groupedMessages;
 
+                items.add(LocaleController.getString("SaveMessage", R.string.SaveMessage));
+                options.add(1000);
+                icons.add(R.drawable.msg_archive);
+
                 if (type == -1) {
                     if (selectedObject.type == 0 || selectedObject.isAnimatedEmoji() || getMessageCaption(selectedObject, selectedObjectGroup) != null) {
                         items.add(LocaleController.getString("Copy", R.string.Copy));
@@ -19112,6 +19116,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         SendMessagesHelper.getInstance(currentAccount).editMessage(message, null, false, ChatActivity.this, null, scheduleDate);
                     }
                 }, null);
+                break;
+            }
+            case 100: {
+
                 break;
             }
         }

@@ -644,7 +644,7 @@ public class SharedConfig {
         if(dialogCellAvatarType == 0) {
             radius = 0;
         } else if(dialogCellAvatarType == 1) {
-            radius = 15;
+            radius = 25;
         } else {
             radius = 100;
         }

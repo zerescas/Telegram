@@ -78,7 +78,7 @@ public class ChatListCell extends LinearLayout {
 
                 int avatarSize = 30;
                 rect.set(AndroidUtilities.dp(22) - avatarSize, cy - avatarSize, AndroidUtilities.dp(24) + avatarSize, cy + avatarSize);
-                float radius = SharedConfig.dialogCellAvatarRadius;
+                float radius = SharedConfig.dialogCellAvatarRadius / 1.5f;
                 canvas.drawRoundRect(rect, radius, radius, Theme.dialogs_onlineCirclePaint);
 
                 for (int i = 0; i < (isThreeLines ? 3 : 2); i++) {
