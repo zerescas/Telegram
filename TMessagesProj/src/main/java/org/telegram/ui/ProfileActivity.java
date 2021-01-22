@@ -1438,8 +1438,13 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         return actionBar;
     }
 
+    public void UpdateAvatarRoundRadius() {
+        avatarImage.setRoundRadius(SharedConfig.dialogCellAvatarRadius);
+    }
+
     @Override
     public View createView(Context context) {
+        SharedConfig.profileActivity = this;
         Theme.createProfileResources(context);
 
         searchTransitionOffset = 0;
@@ -2836,7 +2841,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 }
             }
         };
-        avatarImage.setRoundRadius(AndroidUtilities.dp(21));
+        avatarImage.setRoundRadius(SharedConfig.dialogCellAvatarRadius);
         avatarImage.setPivotX(0);
         avatarImage.setPivotY(0);
         avatarContainer.addView(avatarImage, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
@@ -3054,7 +3059,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             avatarContainer.setScaleY(avatarScale);
             avatarContainer.setTranslationX(AndroidUtilities.lerp(avatarX, 0f, value));
             avatarContainer.setTranslationY(AndroidUtilities.lerp((float) Math.ceil(avatarY), 0f, value));
-            avatarImage.setRoundRadius((int) AndroidUtilities.lerp(AndroidUtilities.dpf2(21f), 0f, value));
+            avatarImage.setRoundRadius((int) AndroidUtilities.lerp(SharedConfig.dialogCellAvatarRadius, 0f, value));
             if (searchItem != null) {
                 searchItem.setAlpha(1.0f - value);
             }
@@ -4088,7 +4093,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
 
                 avatarScale = AndroidUtilities.lerp(1.0f, (42f + 42f + 18f) / 42f, animationProgress);
 
-                avatarImage.setRoundRadius((int) AndroidUtilities.lerp(AndroidUtilities.dpf2(21f), 0f, animationProgress));
+                avatarImage.setRoundRadius((int) AndroidUtilities.lerp(SharedConfig.dialogCellAvatarRadius, 0f, animationProgress));
                 avatarContainer.setTranslationX(AndroidUtilities.lerp(avX, 0, animationProgress));
                 avatarContainer.setTranslationY(AndroidUtilities.lerp((float) Math.ceil(avY), 0f, animationProgress));
                 avatarContainer.setScaleX(avatarScale);

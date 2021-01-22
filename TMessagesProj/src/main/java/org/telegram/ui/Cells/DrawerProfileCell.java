@@ -38,6 +38,7 @@ import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.NotificationCenter;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.R;
@@ -72,8 +73,14 @@ public class DrawerProfileCell extends FrameLayout {
     private int darkThemeBackgroundColor;
     public static boolean switchingTheme;
 
+    public void UpdateAvatarRoundRadius() {
+        avatarImageView.getImageReceiver().setRoundRadius(SharedConfig.dialogCellAvatarRadius);
+    }
+
     public DrawerProfileCell(Context context) {
         super(context);
+
+        SharedConfig.drawerProfileCell = this;
 
         shadowView = new ImageView(context);
         shadowView.setVisibility(INVISIBLE);
@@ -82,7 +89,7 @@ public class DrawerProfileCell extends FrameLayout {
         addView(shadowView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 70, Gravity.LEFT | Gravity.BOTTOM));
 
         avatarImageView = new BackupImageView(context);
-        avatarImageView.getImageReceiver().setRoundRadius(AndroidUtilities.dp(32));
+        avatarImageView.getImageReceiver().setRoundRadius(SharedConfig.dialogCellAvatarRadius);
         addView(avatarImageView, LayoutHelper.createFrame(64, 64, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 0, 67));
 
         nameTextView = new TextView(context);

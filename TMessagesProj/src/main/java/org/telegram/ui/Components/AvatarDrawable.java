@@ -13,6 +13,7 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.Layout;
@@ -23,6 +24,7 @@ import androidx.core.graphics.ColorUtils;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
@@ -42,6 +44,8 @@ public class AvatarDrawable extends Drawable {
     private float archivedAvatarProgress;
     private boolean smallSize;
     private StringBuilder stringBuilder = new StringBuilder(5);
+
+    private RectF rect = new RectF();
 
     public static final int AVATAR_TYPE_NORMAL = 0;
     public static final int AVATAR_TYPE_SAVED = 1;
@@ -284,12 +288,11 @@ public class AvatarDrawable extends Drawable {
         Theme.avatar_backgroundPaint.setColor(ColorUtils.setAlphaComponent(getColor(), alpha));
         canvas.save();
         canvas.translate(bounds.left, bounds.top);
-        canvas.drawCircle(size / 2.0f, size / 2.0f, size / 2.0f, Theme.avatar_backgroundPaint);
 
         if (avatarType == AVATAR_TYPE_ARCHIVED) {
             if (archivedAvatarProgress != 0) {
                 Theme.avatar_backgroundPaint.setColor(ColorUtils.setAlphaComponent(Theme.getColor(Theme.key_avatar_backgroundArchived), alpha));
-                canvas.drawCircle(size / 2.0f, size / 2.0f, size / 2.0f * archivedAvatarProgress, Theme.avatar_backgroundPaint);
+                DrawRoundedAvatar(canvas, size, rect, Theme.avatar_backgroundPaint);
                 if (Theme.dialogs_archiveAvatarDrawableRecolored) {
                     Theme.dialogs_archiveAvatarDrawable.beginApplyLayerColors();
                     Theme.dialogs_archiveAvatarDrawable.setLayerColor("Arrow1.**", Theme.getNonAnimatedColor(Theme.key_avatar_backgroundArchived));
@@ -315,6 +318,7 @@ public class AvatarDrawable extends Drawable {
             Theme.dialogs_archiveAvatarDrawable.draw(canvas);
             canvas.restore();
         } else if (avatarType != 0) {
+            DrawRoundedAvatar(canvas, size, rect, Theme.avatar_backgroundPaint);
             Drawable drawable;
 
             if (avatarType == AVATAR_TYPE_REPLIES) {
@@ -359,6 +363,7 @@ public class AvatarDrawable extends Drawable {
                 }
             }
         } else if (drawDeleted && Theme.avatarDrawables[1] != null) {
+            DrawRoundedAvatar(canvas, size, rect, Theme.avatar_backgroundPaint);
             int w = Theme.avatarDrawables[1].getIntrinsicWidth();
             int h = Theme.avatarDrawables[1].getIntrinsicHeight();
             if (w > size - AndroidUtilities.dp(6) || h > size - AndroidUtilities.dp(6)) {
@@ -377,6 +382,12 @@ public class AvatarDrawable extends Drawable {
             }
         }
         canvas.restore();
+    }
+
+    private static void DrawRoundedAvatar(Canvas canvas, int size, RectF rect, Paint paint) {
+        rect.set(0, 0, size, size);
+        float radius = SharedConfig.dialogCellAvatarRadius;
+        canvas.drawRoundRect(rect, radius, radius, paint);
     }
 
     @Override

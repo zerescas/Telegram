@@ -462,6 +462,9 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             editor.putInt("dialogCellAvatarRadius", SharedConfig.dialogCellAvatarRadius);
             editor.commit();
 
+            SharedConfig.profileActivity.UpdateAvatarRoundRadius();
+            SharedConfig.drawerProfileCell.UpdateAvatarRoundRadius();
+
             RecyclerView.ViewHolder holder = listView.findViewHolderForAdapterPosition(dialogCellRadiusRow);
             if (holder != null && holder.itemView instanceof DialogCellAvatarRadiusCell) {
                 DialogCellAvatarRadiusCell cell = (DialogCellAvatarRadiusCell) holder.itemView;

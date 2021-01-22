@@ -22,6 +22,9 @@ import android.util.SparseArray;
 import org.json.JSONObject;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.SerializedData;
+import org.telegram.ui.Cells.DrawerProfileCell;
+import org.telegram.ui.Components.ChatAvatarContainer;
+import org.telegram.ui.ProfileActivity;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -113,6 +116,9 @@ public class SharedConfig {
     public static boolean drawDialogIcons;
     public static boolean useThreeLinesLayout;
     public static boolean archiveHidden;
+
+    public static ProfileActivity profileActivity;
+    public static DrawerProfileCell drawerProfileCell;
 
     public static int distanceSystemType;
 

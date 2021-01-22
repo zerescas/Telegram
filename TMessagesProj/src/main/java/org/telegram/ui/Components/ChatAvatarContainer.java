@@ -35,6 +35,7 @@ import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.ConnectionsManager;
@@ -71,6 +72,7 @@ public class ChatAvatarContainer extends FrameLayout implements NotificationCent
 
     private SharedMediaLayout.SharedMediaPreloader sharedMediaPreloader;
 
+
     public ChatAvatarContainer(Context context, ChatActivity chatActivity, boolean needTime) {
         super(context);
         parentFragment = chatActivity;
@@ -97,7 +99,7 @@ public class ChatAvatarContainer extends FrameLayout implements NotificationCent
             }
         }
         avatarImageView.setContentDescription(LocaleController.getString("AccDescrProfilePicture", R.string.AccDescrProfilePicture));
-        avatarImageView.setRoundRadius(AndroidUtilities.dp(21));
+        avatarImageView.setRoundRadius(SharedConfig.dialogCellAvatarRadius);
         addView(avatarImageView);
         if (avatarClickable) {
             avatarImageView.setOnClickListener(v -> openProfile(true));
