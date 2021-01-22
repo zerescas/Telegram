@@ -106,6 +106,7 @@ public class SharedConfig {
     public static boolean useSystemEmoji;
     public static int fontSize = 16;
     public static int bubbleRadius = 10;
+    public static int dialogCellAvatarRadius = 30;
     public static int ivFontSize = 16;
     private static int devicePerformanceClass;
 

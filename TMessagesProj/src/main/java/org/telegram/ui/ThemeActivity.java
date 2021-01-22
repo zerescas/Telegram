@@ -69,6 +69,7 @@ import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Cells.BrightnessControlCell;
 import org.telegram.ui.Cells.ChatListCell;
 import org.telegram.ui.Cells.ChatMessageCell;
+import org.telegram.ui.Cells.DialogCell;
 import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Cells.NotificationsCheckCell;
 import org.telegram.ui.Cells.ShadowSectionCell;
@@ -170,6 +171,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     private int themeAccentListRow;
     private int themeInfoRow;
 
+    private int dialogCellRadiusHeaderRow;
+    private int dialogCellRadiusRow;
     private int previewMessagesHeaderRow;
     private int previewMessagesRow;
     private ThemePreviewMessagesCell previewMessagesCell;
@@ -373,10 +376,105 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         }
     }
 
+    private class DialogCellAvatarRadiusCell extends FrameLayout {
+
+        private SeekBarView sizeBar;
+        private int startRadius = 0;
+        private int endRadius = 100;
+
+        private TextPaint textPaint;
+
+        public DialogCellAvatarRadiusCell(Context context) {
+            super(context);
+
+            setWillNotDraw(false);
+
+            textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+            textPaint.setTextSize(AndroidUtilities.dp(16));
+
+            sizeBar = new SeekBarView(context);
+            sizeBar.setReportChanges(true);
+            sizeBar.setDelegate(new SeekBarView.SeekBarViewDelegate() {
+                @Override
+                public void onSeekBarDrag(boolean stop, float progress) {
+                    setDialogCellAvatarRadius(Math.round(startRadius + (endRadius - startRadius) * progress), false);
+                }
+
+                @Override
+                public void onSeekBarPressed(boolean pressed) {
+                }
+
+                @Override
+                public CharSequence getContentDescription() {
+                    return String.valueOf(Math.round(startRadius + (endRadius - startRadius) * sizeBar.getProgress()));
+                }
+
+                @Override
+                public int getStepsCount() {
+                    return endRadius - startRadius;
+                }
+            });
+            sizeBar.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+            addView(sizeBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 38, Gravity.LEFT | Gravity.TOP, 5, 5, 39, 0));
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            textPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteValueText));
+            canvas.drawText("" + SharedConfig.dialogCellAvatarRadius, getMeasuredWidth() - AndroidUtilities.dp(39), AndroidUtilities.dp(28), textPaint);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), heightMeasureSpec);
+            sizeBar.setProgress((SharedConfig.dialogCellAvatarRadius - startRadius) / (float) (endRadius - startRadius));
+        }
+
+        @Override
+        public void invalidate() {
+            super.invalidate();
+            sizeBar.invalidate();
+        }
+
+        @Override
+        public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+            super.onInitializeAccessibilityNodeInfo(info);
+            sizeBar.getSeekBarAccessibilityDelegate().onInitializeAccessibilityNodeInfoInternal(this, info);
+        }
+
+        @Override
+        public boolean performAccessibilityAction(int action, Bundle arguments) {
+            return super.performAccessibilityAction(action, arguments) || sizeBar.getSeekBarAccessibilityDelegate().performAccessibilityActionInternal(this, action, arguments);
+        }
+    }
+
     public ThemeActivity(int type) {
         super();
         currentType = type;
         updateRows(true);
+    }
+
+    private boolean setDialogCellAvatarRadius(int size, boolean layout) {
+        if (size != SharedConfig.dialogCellAvatarRadius) {
+            SharedConfig.dialogCellAvatarRadius = size;
+            SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putInt("dialogCellAvatarRadius", SharedConfig.dialogCellAvatarRadius);
+            editor.commit();
+
+            RecyclerView.ViewHolder holder = listView.findViewHolderForAdapterPosition(dialogCellRadiusRow);
+            if (holder != null && holder.itemView instanceof DialogCellAvatarRadiusCell) {
+                DialogCellAvatarRadiusCell cell = (DialogCellAvatarRadiusCell) holder.itemView;
+                if (layout) {
+                    cell.requestLayout();
+                } else {
+                    cell.invalidate();
+                }
+            }
+            updateMenuItem();
+            return true;
+        }
+        return false;
     }
 
     private boolean setBubbleRadius(int size, boolean layout) {
@@ -387,24 +485,19 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             editor.putInt("bubbleRadius", SharedConfig.bubbleRadius);
             editor.commit();
 
-            RecyclerView.ViewHolder holder = listView.findViewHolderForAdapterPosition(textSizeRow);
-            if (holder != null && holder.itemView instanceof TextSizeCell) {
-                TextSizeCell cell = (TextSizeCell) holder.itemView;
-                ChatMessageCell[] cells = previewMessagesCell.getCells();
-                for (int a = 0; a < cells.length; a++) {
-                    cells[a].getMessageObject().resetLayout();
-                    cells[a].requestLayout();
-                }
-                cell.invalidate();
-            }
-
-            holder = listView.findViewHolderForAdapterPosition(bubbleRadiusRow);
+            RecyclerView.ViewHolder holder = listView.findViewHolderForAdapterPosition(bubbleRadiusRow);
             if (holder != null && holder.itemView instanceof BubbleRadiusCell) {
                 BubbleRadiusCell cell = (BubbleRadiusCell) holder.itemView;
                 if (layout) {
                     cell.requestLayout();
                 } else {
                     cell.invalidate();
+                }
+
+                ChatMessageCell[] cells = previewMessagesCell.getCells();
+                for (int a = 0; a < cells.length; a++) {
+                    cells[a].getMessageObject().resetLayout();
+                    cells[a].requestLayout();
                 }
             }
 
@@ -531,6 +624,9 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             chatListInfoRow = rowCount++;
             chatListHeaderRow = rowCount++;
             chatListRow = rowCount++;
+
+            dialogCellRadiusHeaderRow = rowCount++;
+            dialogCellRadiusRow = rowCount++;
 
             settingsInfoRow = rowCount++;
             settingsRow = rowCount++;
@@ -804,9 +900,13 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                         if (setBubbleRadius(10, true)) {
                             changed = true;
                         }
+                        if (setDialogCellAvatarRadius(100, true)) {
+                            changed = true;
+                        }
                         if (changed) {
                             listAdapter.notifyItemChanged(textSizeRow, new Object());
                             listAdapter.notifyItemChanged(bubbleRadiusRow, new Object());
+                            listAdapter.notifyItemChanged(dialogCellRadiusRow, new Object());
                         }
                         if (themesHorizontalListCell != null) {
                             Theme.ThemeInfo themeInfo = Theme.getTheme("Blue");
@@ -1068,7 +1168,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         }
         int fontSize = AndroidUtilities.isTablet() ? 18 : 16;
         Theme.ThemeInfo currentTheme = Theme.getCurrentTheme();
-        if (SharedConfig.fontSize != fontSize || SharedConfig.bubbleRadius != 10 || !currentTheme.firstAccentIsDefault || currentTheme.currentAccentId != Theme.DEFALT_THEME_ACCENT_ID) {
+        if (SharedConfig.fontSize != fontSize || SharedConfig.bubbleRadius != 10 || SharedConfig.dialogCellAvatarRadius != 30 || !currentTheme.firstAccentIsDefault || currentTheme.currentAccentId != Theme.DEFALT_THEME_ACCENT_ID) {
             menuItem.showSubItem(reset_settings);
         } else {
             menuItem.hideSubItem(reset_settings);
@@ -1840,6 +1940,11 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
 
 
                 case 14:
+                    view = new DialogCellAvatarRadiusCell(mContext);
+                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    break;
+
+                case 15:
                 default:
                     view = previewMessagesCell = new ThemePreviewMessagesCell(mContext, parentLayout, 0);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -1953,6 +2058,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                         headerCell.setText(LocaleController.getString("BubbleRadius", R.string.BubbleRadius));
                     } else if (position == previewMessagesHeaderRow) {
                         headerCell.setText(LocaleController.getString("PreviewMessages", R.string.PreviewMessages));
+                    } else if (position == dialogCellRadiusHeaderRow) {
+                        headerCell.setText(LocaleController.getString("DialogCellAvatarRadius", R.string.DialogCellAvatarRadius));
                     }
                     break;
                 }
@@ -2054,7 +2161,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                 return 4;
             } else if (position == scheduleHeaderRow || position == automaticHeaderRow || position == preferedHeaderRow ||
                     position == settingsRow || position == themeHeaderRow || position == textSizeHeaderRow ||
-                    position == chatListHeaderRow || position == bubbleRadiusHeaderRow || position == previewMessagesHeaderRow) {
+                    position == chatListHeaderRow || position == bubbleRadiusHeaderRow || position == previewMessagesHeaderRow ||
+                    position == dialogCellRadiusHeaderRow) {
                 return 5;
             } else if (position == automaticBrightnessRow) {
                 return 6;
@@ -2074,8 +2182,10 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                 return 12;
             } else if (position == bubbleRadiusRow) {
                 return 13;
-            } else if (position == previewMessagesRow) {
+            } else if (position == dialogCellRadiusRow) {
                 return 14;
+            } else if (position == previewMessagesRow) {
+                return 15;
             }
             return 1;
         }
@@ -2091,7 +2201,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     public ArrayList<ThemeDescription> getThemeDescriptions() {
         ArrayList<ThemeDescription> themeDescriptions = new ArrayList<>();
 
-        themeDescriptions.add(new ThemeDescription(listView, ThemeDescription.FLAG_CELLBACKGROUNDCOLOR, new Class[]{TextSettingsCell.class, TextCheckCell.class, HeaderCell.class, BrightnessControlCell.class, ThemeTypeCell.class, TextSizeCell.class, BubbleRadiusCell.class, ChatListCell.class, NotificationsCheckCell.class, ThemesHorizontalListCell.class, TintRecyclerListView.class}, null, null, null, Theme.key_windowBackgroundWhite));
+        themeDescriptions.add(new ThemeDescription(listView, ThemeDescription.FLAG_CELLBACKGROUNDCOLOR, new Class[]{TextSettingsCell.class, TextCheckCell.class, HeaderCell.class, BrightnessControlCell.class, ThemeTypeCell.class, TextSizeCell.class, BubbleRadiusCell.class, DialogCellAvatarRadiusCell.class, ChatListCell.class, NotificationsCheckCell.class, ThemesHorizontalListCell.class, TintRecyclerListView.class}, null, null, null, Theme.key_windowBackgroundWhite));
         themeDescriptions.add(new ThemeDescription(fragmentView, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_windowBackgroundGray));
 
         themeDescriptions.add(new ThemeDescription(actionBar, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_actionBarDefault));

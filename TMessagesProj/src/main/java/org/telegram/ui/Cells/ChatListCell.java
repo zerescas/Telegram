@@ -75,7 +75,11 @@ public class ChatListCell extends LinearLayout {
             for (int a = 0; a < 2; a++) {
                 int cy = AndroidUtilities.dp(a == 0 ? 21 : 53);
                 Theme.dialogs_onlineCirclePaint.setColor(Color.argb(a == 0 ? 204 : 90, r, g, b));
-                canvas.drawCircle(AndroidUtilities.dp(22), cy, AndroidUtilities.dp(11), Theme.dialogs_onlineCirclePaint);
+
+                int avatarSize = 30;
+                rect.set(AndroidUtilities.dp(22) - avatarSize, cy - avatarSize, AndroidUtilities.dp(24) + avatarSize, cy + avatarSize);
+                float radius = SharedConfig.dialogCellAvatarRadius / 2.5f;
+                canvas.drawRoundRect(rect, radius, radius, Theme.dialogs_onlineCirclePaint);
 
                 for (int i = 0; i < (isThreeLines ? 3 : 2); i++) {
                     Theme.dialogs_onlineCirclePaint.setColor(Color.argb(i == 0 ? 204 : 90, r, g, b));

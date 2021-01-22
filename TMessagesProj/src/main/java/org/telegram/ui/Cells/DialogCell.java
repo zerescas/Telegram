@@ -294,7 +294,7 @@ public class DialogCell extends BaseCell {
         super(context);
 
         Theme.createDialogsResources(context);
-        avatarImage.setRoundRadius(AndroidUtilities.dp(28));
+        avatarImage.setRoundRadius(AndroidUtilities.dp(SharedConfig.dialogCellAvatarRadius));
         thumbImage.setRoundRadius(AndroidUtilities.dp(2));
         useForceThreeLines = forceThreeLines;
         currentAccount = account;
@@ -2142,6 +2142,7 @@ public class DialogCell extends BaseCell {
             requestLayout();
         }
 
+        avatarImage.setRoundRadius(SharedConfig.dialogCellAvatarRadius);
         invalidate();
     }
 
