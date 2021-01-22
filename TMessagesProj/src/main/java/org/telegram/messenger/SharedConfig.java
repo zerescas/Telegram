@@ -121,6 +121,7 @@ public class SharedConfig {
     public static DrawerProfileCell drawerProfileCell;
 
     public static int distanceSystemType;
+    public static int dialogCellAvatarType;
 
     static {
         loadConfig();
@@ -266,6 +267,8 @@ public class SharedConfig {
             repeatMode = preferences.getInt("repeatMode", 0);
             fontSize = preferences.getInt("fons_size", AndroidUtilities.isTablet() ? 18 : 16);
             bubbleRadius = preferences.getInt("bubbleRadius", 10);
+            dialogCellAvatarRadius = preferences.getInt("dialogCellAvatarRadius", 100);
+            dialogCellAvatarType = preferences.getInt("dialogCellAvatarType", 2);
             ivFontSize = preferences.getInt("iv_font_size", fontSize);
             allowBigEmoji = preferences.getBoolean("allowBigEmoji", true);
             useSystemEmoji = preferences.getBoolean("useSystemEmoji", false);
@@ -627,6 +630,29 @@ public class SharedConfig {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("useThreeLinesLayout", useThreeLinesLayout);
         editor.commit();
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.dialogsNeedReload, true);
+    }
+
+    public static void setAvatarRadiusType(int value) {
+        dialogCellAvatarType = value;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("dialogCellAvatarType", dialogCellAvatarType);
+        editor.commit();
+
+        int radius = 0;
+        if(dialogCellAvatarType == 0) {
+            radius = 0;
+        } else if(dialogCellAvatarType == 1) {
+            radius = 15;
+        } else {
+            radius = 100;
+        }
+
+        dialogCellAvatarRadius = radius;
+        editor.putInt("dialogCellAvatarRadius", radius);
+        editor.commit();
+
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.dialogsNeedReload, true);
     }
 

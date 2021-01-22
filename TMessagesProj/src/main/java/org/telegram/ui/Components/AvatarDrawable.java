@@ -289,6 +289,9 @@ public class AvatarDrawable extends Drawable {
         canvas.save();
         canvas.translate(bounds.left, bounds.top);
 
+        //canvas.drawCircle(size / 2.0f, size / 2.0f, size / 2.0f, Theme.avatar_backgroundPaint);
+        DrawRoundedAvatar(canvas, size, rect, Theme.avatar_backgroundPaint);
+
         if (avatarType == AVATAR_TYPE_ARCHIVED) {
             if (archivedAvatarProgress != 0) {
                 Theme.avatar_backgroundPaint.setColor(ColorUtils.setAlphaComponent(Theme.getColor(Theme.key_avatar_backgroundArchived), alpha));
@@ -318,7 +321,6 @@ public class AvatarDrawable extends Drawable {
             Theme.dialogs_archiveAvatarDrawable.draw(canvas);
             canvas.restore();
         } else if (avatarType != 0) {
-            DrawRoundedAvatar(canvas, size, rect, Theme.avatar_backgroundPaint);
             Drawable drawable;
 
             if (avatarType == AVATAR_TYPE_REPLIES) {
@@ -363,7 +365,6 @@ public class AvatarDrawable extends Drawable {
                 }
             }
         } else if (drawDeleted && Theme.avatarDrawables[1] != null) {
-            DrawRoundedAvatar(canvas, size, rect, Theme.avatar_backgroundPaint);
             int w = Theme.avatarDrawables[1].getIntrinsicWidth();
             int h = Theme.avatarDrawables[1].getIntrinsicHeight();
             if (w > size - AndroidUtilities.dp(6) || h > size - AndroidUtilities.dp(6)) {

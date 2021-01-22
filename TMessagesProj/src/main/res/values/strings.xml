@@ -1511,6 +1511,9 @@
     <string name="BubbleRadius">Message corners</string>
     <string name="PreviewMessages">Messages appearance</string>
     <string name="DialogCellAvatarRadius">Chat avatar corners</string>
+    <string name="DialogCellAvatarRadiusSquare">Square</string>
+    <string name="DialogCellAvatarRadiusRoundSquare">Round Square</string>
+    <string name="DialogCellAvatarRadiusCircle">Circle</string>
     <string name="ChatList">Chat list view</string>
     <string name="ChatListDefault">Two lines</string>
     <string name="ChatListExpanded">Three lines</string>

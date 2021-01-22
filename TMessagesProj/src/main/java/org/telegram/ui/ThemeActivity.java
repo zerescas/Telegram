@@ -66,6 +66,7 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
+import org.telegram.ui.Cells.AvatarRoundnessCell;
 import org.telegram.ui.Cells.BrightnessControlCell;
 import org.telegram.ui.Cells.ChatListCell;
 import org.telegram.ui.Cells.ChatMessageCell;
@@ -376,108 +377,10 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         }
     }
 
-    private class DialogCellAvatarRadiusCell extends FrameLayout {
-
-        private SeekBarView sizeBar;
-        private int startRadius = 0;
-        private int endRadius = 100;
-
-        private TextPaint textPaint;
-
-        public DialogCellAvatarRadiusCell(Context context) {
-            super(context);
-
-            setWillNotDraw(false);
-
-            textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-            textPaint.setTextSize(AndroidUtilities.dp(16));
-
-            sizeBar = new SeekBarView(context);
-            sizeBar.setReportChanges(true);
-            sizeBar.setDelegate(new SeekBarView.SeekBarViewDelegate() {
-                @Override
-                public void onSeekBarDrag(boolean stop, float progress) {
-                    setDialogCellAvatarRadius(Math.round(startRadius + (endRadius - startRadius) * progress), false);
-                }
-
-                @Override
-                public void onSeekBarPressed(boolean pressed) {
-                }
-
-                @Override
-                public CharSequence getContentDescription() {
-                    return String.valueOf(Math.round(startRadius + (endRadius - startRadius) * sizeBar.getProgress()));
-                }
-
-                @Override
-                public int getStepsCount() {
-                    return endRadius - startRadius;
-                }
-            });
-            sizeBar.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
-            addView(sizeBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 38, Gravity.LEFT | Gravity.TOP, 5, 5, 39, 0));
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            textPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteValueText));
-            canvas.drawText("" + SharedConfig.dialogCellAvatarRadius, getMeasuredWidth() - AndroidUtilities.dp(39), AndroidUtilities.dp(28), textPaint);
-        }
-
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), heightMeasureSpec);
-            sizeBar.setProgress((SharedConfig.dialogCellAvatarRadius - startRadius) / (float) (endRadius - startRadius));
-        }
-
-        @Override
-        public void invalidate() {
-            super.invalidate();
-            sizeBar.invalidate();
-        }
-
-        @Override
-        public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-            super.onInitializeAccessibilityNodeInfo(info);
-            sizeBar.getSeekBarAccessibilityDelegate().onInitializeAccessibilityNodeInfoInternal(this, info);
-        }
-
-        @Override
-        public boolean performAccessibilityAction(int action, Bundle arguments) {
-            return super.performAccessibilityAction(action, arguments) || sizeBar.getSeekBarAccessibilityDelegate().performAccessibilityActionInternal(this, action, arguments);
-        }
-    }
-
     public ThemeActivity(int type) {
         super();
         currentType = type;
         updateRows(true);
-    }
-
-    private boolean setDialogCellAvatarRadius(int size, boolean layout) {
-        if (size != SharedConfig.dialogCellAvatarRadius) {
-            SharedConfig.dialogCellAvatarRadius = size;
-            SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putInt("dialogCellAvatarRadius", SharedConfig.dialogCellAvatarRadius);
-            editor.commit();
-
-            SharedConfig.profileActivity.UpdateAvatarRoundRadius();
-            SharedConfig.drawerProfileCell.UpdateAvatarRoundRadius();
-
-            RecyclerView.ViewHolder holder = listView.findViewHolderForAdapterPosition(dialogCellRadiusRow);
-            if (holder != null && holder.itemView instanceof DialogCellAvatarRadiusCell) {
-                DialogCellAvatarRadiusCell cell = (DialogCellAvatarRadiusCell) holder.itemView;
-                if (layout) {
-                    cell.requestLayout();
-                } else {
-                    cell.invalidate();
-                }
-            }
-            updateMenuItem();
-            return true;
-        }
-        return false;
     }
 
     private boolean setBubbleRadius(int size, boolean layout) {
@@ -901,9 +804,6 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                             changed = true;
                         }
                         if (setBubbleRadius(10, true)) {
-                            changed = true;
-                        }
-                        if (setDialogCellAvatarRadius(100, true)) {
                             changed = true;
                         }
                         if (changed) {
@@ -1943,7 +1843,15 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
 
 
                 case 14:
-                    view = new DialogCellAvatarRadiusCell(mContext);
+                    view = new AvatarRoundnessCell(mContext) {
+                        @Override
+                        protected void didSelectAvatarRadiusType(int type) {
+                            SharedConfig.setAvatarRadiusType(type);
+                            SharedConfig.profileActivity.UpdateAvatarRoundRadius();
+                            SharedConfig.drawerProfileCell.UpdateAvatarRoundRadius();
+                        }
+                    };
+
                     view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
 
@@ -2204,7 +2112,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     public ArrayList<ThemeDescription> getThemeDescriptions() {
         ArrayList<ThemeDescription> themeDescriptions = new ArrayList<>();
 
-        themeDescriptions.add(new ThemeDescription(listView, ThemeDescription.FLAG_CELLBACKGROUNDCOLOR, new Class[]{TextSettingsCell.class, TextCheckCell.class, HeaderCell.class, BrightnessControlCell.class, ThemeTypeCell.class, TextSizeCell.class, BubbleRadiusCell.class, DialogCellAvatarRadiusCell.class, ChatListCell.class, NotificationsCheckCell.class, ThemesHorizontalListCell.class, TintRecyclerListView.class}, null, null, null, Theme.key_windowBackgroundWhite));
+        themeDescriptions.add(new ThemeDescription(listView, ThemeDescription.FLAG_CELLBACKGROUNDCOLOR, new Class[]{TextSettingsCell.class, TextCheckCell.class, HeaderCell.class, BrightnessControlCell.class, ThemeTypeCell.class, TextSizeCell.class, BubbleRadiusCell.class, ChatListCell.class, AvatarRoundnessCell.class, NotificationsCheckCell.class, ThemesHorizontalListCell.class, TintRecyclerListView.class}, null, null, null, Theme.key_windowBackgroundWhite));
         themeDescriptions.add(new ThemeDescription(fragmentView, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_windowBackgroundGray));
 
         themeDescriptions.add(new ThemeDescription(actionBar, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_actionBarDefault));
@@ -2248,8 +2156,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         themeDescriptions.add(new ThemeDescription(listView, ThemeDescription.FLAG_PROGRESSBAR, new Class[]{BubbleRadiusCell.class}, new String[]{"sizeBar"}, null, null, null, Theme.key_player_progress));
         themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{BubbleRadiusCell.class}, new String[]{"sizeBar"}, null, null, null, Theme.key_player_progressBackground));
 
-        themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{ChatListCell.class}, null, null, null, Theme.key_radioBackground));
-        themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{ChatListCell.class}, null, null, null, Theme.key_radioBackgroundChecked));
+        themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{ChatListCell.class, AvatarRoundnessCell.class}, null, null, null, Theme.key_radioBackground));
+        themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{ChatListCell.class, AvatarRoundnessCell.class}, null, null, null, Theme.key_radioBackgroundChecked));
 
         themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{NotificationsCheckCell.class}, new String[]{"textView"}, null, null, null, Theme.key_windowBackgroundWhiteBlackText));
         themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{NotificationsCheckCell.class}, new String[]{"valueTextView"}, null, null, null, Theme.key_windowBackgroundWhiteGrayText2));

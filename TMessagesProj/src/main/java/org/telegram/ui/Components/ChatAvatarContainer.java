@@ -72,7 +72,6 @@ public class ChatAvatarContainer extends FrameLayout implements NotificationCent
 
     private SharedMediaLayout.SharedMediaPreloader sharedMediaPreloader;
 
-
     public ChatAvatarContainer(Context context, ChatActivity chatActivity, boolean needTime) {
         super(context);
         parentFragment = chatActivity;

@@ -763,7 +763,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
 
         backgroundDrawable = new MessageBackgroundDrawable(this);
         avatarImage = new ImageReceiver();
-        avatarImage.setRoundRadius(AndroidUtilities.dp(21));
+        avatarImage.setRoundRadius(SharedConfig.dialogCellAvatarRadius);
         avatarDrawable = new AvatarDrawable();
         replyImageReceiver = new ImageReceiver(this);
         replyImageReceiver.setRoundRadius(AndroidUtilities.dp(2));

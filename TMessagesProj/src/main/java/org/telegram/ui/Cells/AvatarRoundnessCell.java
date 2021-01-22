@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.text.TextPaint;
 import android.view.Gravity;
+import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -19,7 +20,7 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RadioButton;
 
-public class ChatListCell extends LinearLayout {
+public class AvatarRoundnessCell extends LinearLayout {
 
     private class ListView extends FrameLayout {
 
@@ -28,13 +29,13 @@ public class ChatListCell extends LinearLayout {
         private RectF rect = new RectF();
         private TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
-        public ListView(Context context, boolean threeLines) {
+        private int option = 0;
+
+        public ListView(Context context, int option) {
             super(context);
             setWillNotDraw(false);
 
-            isThreeLines = threeLines;
-            setContentDescription(threeLines ? LocaleController.getString("ChatListExpanded", R.string.ChatListExpanded) : LocaleController.getString("ChatListDefault", R.string.ChatListDefault));
-
+            this.option = option;
             textPaint.setTextSize(AndroidUtilities.dp(13));
 
             button = new RadioButton(context) {
@@ -46,7 +47,7 @@ public class ChatListCell extends LinearLayout {
             };
             button.setSize(AndroidUtilities.dp(20));
             addView(button, LayoutHelper.createFrame(22, 22, Gravity.RIGHT | Gravity.TOP, 0, 26, 10, 0));
-            button.setChecked(isThreeLines && SharedConfig.useThreeLinesLayout || !isThreeLines && !SharedConfig.useThreeLinesLayout, false);
+            button.setChecked(option == SharedConfig.dialogCellAvatarType, false);
         }
 
         @Override
@@ -66,32 +67,35 @@ public class ChatListCell extends LinearLayout {
             Theme.dialogs_onlineCirclePaint.setColor(Color.argb((int) (31 * (1.0f - button.getProgress())), r, g, b));
             canvas.drawRoundRect(rect, AndroidUtilities.dp(6), AndroidUtilities.dp(6), Theme.dialogs_onlineCirclePaint);
 
-            String text = isThreeLines ? LocaleController.getString("ChatListExpanded", R.string.ChatListExpanded) : LocaleController.getString("ChatListDefault", R.string.ChatListDefault);
+            String text;
+            if(option == 0) {
+                text = LocaleController.getString("DialogCellAvatarRadiusSquare", R.string.DialogCellAvatarRadiusSquare);
+            } else if(option == 1) {
+                text = LocaleController.getString("DialogCellAvatarRadiusRoundSquare", R.string.DialogCellAvatarRadiusRoundSquare);
+            } else {
+                text = LocaleController.getString("DialogCellAvatarRadiusCircle", R.string.DialogCellAvatarRadiusCircle);
+            }
+
             int width = (int) Math.ceil(textPaint.measureText(text));
 
+            Theme.dialogs_onlineCirclePaint.setColor(Color.argb(90, r, g, b));
             textPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             canvas.drawText(text, (getMeasuredWidth() - width) / 2, AndroidUtilities.dp(96), textPaint);
 
-            for (int a = 0; a < 2; a++) {
-                int cy = AndroidUtilities.dp(a == 0 ? 21 : 53);
-                Theme.dialogs_onlineCirclePaint.setColor(Color.argb(a == 0 ? 204 : 90, r, g, b));
+            int avatarSize = 55;
+            rect.set(AndroidUtilities.dp(36) - avatarSize, rect.height() / 2 - avatarSize , AndroidUtilities.dp(36) + avatarSize, rect.height() / 2 + avatarSize);
 
-                int avatarSize = 30;
-                rect.set(AndroidUtilities.dp(22) - avatarSize, cy - avatarSize, AndroidUtilities.dp(24) + avatarSize, cy + avatarSize);
-                float radius = SharedConfig.dialogCellAvatarRadius;
-                canvas.drawRoundRect(rect, radius, radius, Theme.dialogs_onlineCirclePaint);
-
-                for (int i = 0; i < (isThreeLines ? 3 : 2); i++) {
-                    Theme.dialogs_onlineCirclePaint.setColor(Color.argb(i == 0 ? 204 : 90, r, g, b));
-                    if (isThreeLines) {
-                        rect.set(AndroidUtilities.dp(41), cy - AndroidUtilities.dp(8.3f - i * 7), getMeasuredWidth() - AndroidUtilities.dp(i == 0 ? 72 : 48), cy - AndroidUtilities.dp(8.3f - 3 - i * 7));
-                        canvas.drawRoundRect(rect, AndroidUtilities.dpf2(1.5f), AndroidUtilities.dpf2(1.5f), Theme.dialogs_onlineCirclePaint);
-                    } else {
-                        rect.set(AndroidUtilities.dp(41), cy - AndroidUtilities.dp(7 - i * 10), getMeasuredWidth() - AndroidUtilities.dp(i == 0 ? 72 : 48), cy - AndroidUtilities.dp(7 - 4 - i * 10));
-                        canvas.drawRoundRect(rect, AndroidUtilities.dp(2), AndroidUtilities.dp(2), Theme.dialogs_onlineCirclePaint);
-                    }
-                }
+            float radius = 0;
+            if(option == 0) {
+                radius = 0;
+            } else if(option == 1) {
+                radius = 30;
+            } else {
+                radius = 100;
             }
+
+            radius /= 1.5f;
+            canvas.drawRoundRect(rect, radius, radius, Theme.dialogs_onlineCirclePaint);
         }
 
         @Override
@@ -103,27 +107,27 @@ public class ChatListCell extends LinearLayout {
         }
     }
 
-    private ListView[] listView = new ListView[2];
+    private ListView[] listView = new ListView[3];
 
-    public ChatListCell(Context context) {
+    public AvatarRoundnessCell(Context context) {
         super(context);
         setOrientation(HORIZONTAL);
         setPadding(AndroidUtilities.dp(21), AndroidUtilities.dp(10), AndroidUtilities.dp(21), 0);
 
         for (int a = 0; a < listView.length; a++) {
-            boolean isThreeLines = a == 1;
-            listView[a] = new ListView(context, isThreeLines);
-            addView(listView[a], LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, 0.5f, a == 1 ? 10 : 0, 0, 0, 0));
+            listView[a] = new ListView(context, a);
+            addView(listView[a], LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, 0.5f, a != 0 && a < listView.length ? 10 : 0, 0, 0, 0));
+            int finalA = a;
             listView[a].setOnClickListener(v -> {
-                for (int b = 0; b < 2; b++) {
+                for (int b = 0; b < 3; b++) {
                     listView[b].button.setChecked(listView[b] == v, true);
                 }
-                didSelectChatType(isThreeLines);
+                didSelectAvatarRadiusType(finalA);
             });
         }
     }
 
-    protected void didSelectChatType(boolean threeLines) {
+    protected void didSelectAvatarRadiusType(int type) {
 
     }
 
@@ -137,6 +141,6 @@ public class ChatListCell extends LinearLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(123), MeasureSpec.EXACTLY));
+        super.onMeasure(View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.getSize(widthMeasureSpec), View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(123), View.MeasureSpec.EXACTLY));
     }
 }
